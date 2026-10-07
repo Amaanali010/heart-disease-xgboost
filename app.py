@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 import pickle
@@ -15,7 +16,7 @@ st.set_page_config(
 
 
 # ============================================================
-# LOAD MODEL
+# LOAD TRAINED MODEL
 # ============================================================
 
 @st.cache_resource
@@ -27,16 +28,36 @@ def load_model():
     return model
 
 
+# ============================================================
+# TRY TO LOAD MODEL
+# ============================================================
+
 try:
+
     model = load_model()
+
+    st.success("✅ Model loaded successfully!")
 
 except Exception as e:
 
     st.error("❌ Model could not be loaded.")
 
-    st.write("Make sure this file exists in your GitHub repository:")
+    st.write("### Actual Error")
 
-    st.code("heart_disease_xgb_pipeline.pkl")
+    st.code(str(e))
+
+    st.write("### Error Type")
+
+    st.code(type(e).__name__)
+
+    st.info(
+        """
+        The model file exists, but Streamlit may be unable to load it
+        because of a Python, scikit-learn, or XGBoost compatibility issue.
+
+        Send the error shown above if this message appears.
+        """
+    )
 
     st.stop()
 
@@ -49,15 +70,27 @@ st.title("❤️ Heart Disease Prediction System")
 
 st.write(
     """
-    Enter the patient's information below. The trained XGBoost
-    machine-learning model will estimate whether the patient is
-    likely to have heart disease.
+    Enter the patient's information below.
+
+    The trained XGBoost machine-learning model will estimate whether
+    the patient is likely to have heart disease.
     """
 )
 
+
+# ============================================================
+# MEDICAL DISCLAIMER
+# ============================================================
+
 st.warning(
-    "⚠️ This application is for educational and research purposes only. "
-    "It is NOT a medical diagnosis and should not replace a qualified doctor."
+    """
+    ⚠️ Medical Disclaimer
+
+    This application is for educational and research purposes only.
+
+    It is NOT a medical diagnosis system and should not replace
+    evaluation by a qualified healthcare professional.
+    """
 )
 
 
@@ -65,46 +98,57 @@ st.warning(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.title("About This App")
+st.sidebar.title("❤️ Heart Disease AI")
 
 st.sidebar.write(
     """
-    This application uses an XGBoost classification model.
+    ### Machine Learning Model
 
-    The model was trained using heart disease patient data.
+    **Algorithm:** XGBoost
 
-    Model:
-    XGBoost
+    **Task:** Binary Classification
 
-    Preprocessing:
-    One-Hot Encoding
+    **Class 0:** No Heart Disease
 
-    Deployment:
-    Streamlit Community Cloud
+    **Class 1:** Heart Disease
+
+    **Preprocessing:** One-Hot Encoding
+
+    **Deployment:** Streamlit Community Cloud
     """
 )
 
+st.sidebar.divider()
+
 st.sidebar.info(
     """
-    Prediction classes:
+    ### Model Performance
 
-    0 = No Heart Disease
+    Test Accuracy:
 
-    1 = Heart Disease
+    **77.05%**
+
+    Test ROC-AUC:
+
+    **87.45%**
     """
 )
 
 
 # ============================================================
-# INPUT SECTION
+# PATIENT INFORMATION
 # ============================================================
 
 st.header("🧑 Patient Information")
 
+st.write(
+    "Please enter the patient's information below."
+)
 
-# ------------------------------------------------------------
+
+# ============================================================
 # ROW 1
-# ------------------------------------------------------------
+# ============================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -126,29 +170,27 @@ with col2:
         "Sex",
         options=[0, 1],
         format_func=lambda x:
-            "Female (0)" if x == 0 else "Male (1)"
+        "Female (0)" if x == 0 else "Male (1)"
     )
 
 
 with col3:
 
     cp = st.selectbox(
-        "Chest Pain Type (cp)",
+        "Chest Pain Type",
         options=[0, 1, 2, 3],
         format_func=lambda x: {
-
             0: "0 - Typical Angina",
             1: "1 - Atypical Angina",
             2: "2 - Non-anginal Pain",
             3: "3 - Asymptomatic"
-
         }[x]
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # ROW 2
-# ------------------------------------------------------------
+# ============================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -156,7 +198,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
 
     trestbps = st.number_input(
-        "Resting Blood Pressure (trestbps)",
+        "Resting Blood Pressure",
         min_value=50,
         max_value=250,
         value=120,
@@ -167,7 +209,7 @@ with col1:
 with col2:
 
     chol = st.number_input(
-        "Cholesterol (chol)",
+        "Cholesterol",
         min_value=50,
         max_value=700,
         value=200,
@@ -181,13 +223,13 @@ with col3:
         "Fasting Blood Sugar > 120 mg/dl",
         options=[0, 1],
         format_func=lambda x:
-            "No (0)" if x == 0 else "Yes (1)"
+        "No (0)" if x == 0 else "Yes (1)"
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # ROW 3
-# ------------------------------------------------------------
+# ============================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -195,14 +237,12 @@ col1, col2, col3 = st.columns(3)
 with col1:
 
     restecg = st.selectbox(
-        "Resting ECG (restecg)",
+        "Resting ECG",
         options=[0, 1, 2],
         format_func=lambda x: {
-
             0: "0 - Normal",
             1: "1 - ST-T Wave Abnormality",
             2: "2 - Left Ventricular Hypertrophy"
-
         }[x]
     )
 
@@ -210,7 +250,7 @@ with col1:
 with col2:
 
     thalach = st.number_input(
-        "Maximum Heart Rate (thalach)",
+        "Maximum Heart Rate",
         min_value=50,
         max_value=250,
         value=150,
@@ -224,13 +264,13 @@ with col3:
         "Exercise-Induced Angina",
         options=[0, 1],
         format_func=lambda x:
-            "No (0)" if x == 0 else "Yes (1)"
+        "No (0)" if x == 0 else "Yes (1)"
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # ROW 4
-# ------------------------------------------------------------
+# ============================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -238,7 +278,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
 
     oldpeak = st.number_input(
-        "ST Depression (oldpeak)",
+        "ST Depression (Oldpeak)",
         min_value=0.0,
         max_value=10.0,
         value=1.0,
@@ -249,14 +289,12 @@ with col1:
 with col2:
 
     slope = st.selectbox(
-        "Slope of Peak Exercise ST Segment",
+        "ST Segment Slope",
         options=[0, 1, 2],
         format_func=lambda x: {
-
             0: "0 - Upsloping",
             1: "1 - Flat",
             2: "2 - Downsloping"
-
         }[x]
     )
 
@@ -269,9 +307,9 @@ with col3:
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # ROW 5
-# ------------------------------------------------------------
+# ============================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -282,12 +320,10 @@ with col1:
         "Thalassemia (thal)",
         options=[0, 1, 2, 3],
         format_func=lambda x: {
-
             0: "0",
             1: "1",
             2: "2",
             3: "3"
-
         }[x]
     )
 
@@ -312,7 +348,7 @@ predict_button = st.button(
 if predict_button:
 
     # --------------------------------------------------------
-    # CREATE DATAFRAME
+    # CREATE INPUT DATAFRAME
     # --------------------------------------------------------
 
     input_data = pd.DataFrame({
@@ -347,6 +383,19 @@ if predict_button:
 
 
     # --------------------------------------------------------
+    # SHOW INPUT DATA
+    # --------------------------------------------------------
+
+    st.subheader("📋 Patient Information")
+
+    st.dataframe(
+        input_data,
+        use_container_width=True,
+        hide_index=True
+    )
+
+
+    # --------------------------------------------------------
     # MAKE PREDICTION
     # --------------------------------------------------------
 
@@ -354,15 +403,15 @@ if predict_button:
 
         prediction = model.predict(input_data)[0]
 
-        probability = model.predict_proba(input_data)[0]
+        probabilities = model.predict_proba(input_data)[0]
 
-        no_disease_probability = probability[0]
+        no_disease_probability = probabilities[0]
 
-        disease_probability = probability[1]
+        disease_probability = probabilities[1]
 
 
         # ====================================================
-        # RESULT
+        # RESULT SECTION
         # ====================================================
 
         st.divider()
@@ -370,32 +419,35 @@ if predict_button:
         st.header("📊 Prediction Result")
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # HEART DISEASE
-        # ----------------------------------------------------
+        # ====================================================
 
         if prediction == 1:
 
             st.error(
-                "⚠️ Prediction: Heart Disease Detected"
+                "⚠️ Model Prediction: Heart Disease"
             )
 
             st.metric(
-                "Estimated Heart Disease Probability",
-                f"{disease_probability * 100:.2f}%"
+                label="Heart Disease Probability",
+                value=f"{disease_probability * 100:.2f}%"
             )
 
             st.write(
                 f"""
-                ### ⚠️ Model Result
+                ### ⚠️ Model Assessment
 
-                The model predicts **Heart Disease (Class 1)**.
+                Based on the information entered, the model classified
+                this patient as:
 
-                Estimated probability:
+                **Heart Disease — Class 1**
+
+                Estimated model probability:
 
                 **{disease_probability * 100:.2f}%**
 
-                The model's estimated probability of no heart disease is:
+                Probability of No Heart Disease:
 
                 **{no_disease_probability * 100:.2f}%**
                 """
@@ -403,41 +455,46 @@ if predict_button:
 
             st.warning(
                 """
-                This does NOT mean the person definitely has heart disease.
+                This prediction does NOT confirm that the patient has
+                heart disease.
 
-                The result should be discussed with a qualified healthcare
-                professional and confirmed using appropriate clinical
-                evaluation and medical tests.
+                It is only the output of a machine-learning model.
+
+                A qualified healthcare professional should evaluate
+                the patient and perform appropriate medical tests.
                 """
             )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # NO HEART DISEASE
-        # ----------------------------------------------------
+        # ====================================================
 
         else:
 
             st.success(
-                "✅ Prediction: No Heart Disease Detected"
+                "✅ Model Prediction: No Heart Disease"
             )
 
             st.metric(
-                "Estimated No Heart Disease Probability",
-                f"{no_disease_probability * 100:.2f}%"
+                label="No Heart Disease Probability",
+                value=f"{no_disease_probability * 100:.2f}%"
             )
 
             st.write(
                 f"""
-                ### ✅ Model Result
+                ### ✅ Model Assessment
 
-                The model predicts **No Heart Disease (Class 0)**.
+                Based on the information entered, the model classified
+                this patient as:
 
-                Estimated probability:
+                **No Heart Disease — Class 0**
+
+                Estimated model probability:
 
                 **{no_disease_probability * 100:.2f}%**
 
-                The model's estimated probability of heart disease is:
+                Probability of Heart Disease:
 
                 **{disease_probability * 100:.2f}%**
                 """
@@ -445,9 +502,11 @@ if predict_button:
 
             st.info(
                 """
-                A prediction of no heart disease does not guarantee that
-                the person is healthy. If symptoms or concerns exist,
-                consult a qualified healthcare professional.
+                This prediction does NOT guarantee that the patient
+                is free from heart disease.
+
+                If the patient has symptoms or health concerns,
+                they should consult a qualified healthcare professional.
                 """
             )
 
@@ -458,19 +517,19 @@ if predict_button:
 
         st.subheader("📈 Prediction Probability")
 
-        probability_df = pd.DataFrame({
+        probability_df = pd.DataFrame(
+            {
+                "Condition": [
+                    "No Heart Disease",
+                    "Heart Disease"
+                ],
 
-            "Condition": [
-                "No Heart Disease",
-                "Heart Disease"
-            ],
-
-            "Probability": [
-                no_disease_probability,
-                disease_probability
-            ]
-
-        })
+                "Probability": [
+                    no_disease_probability,
+                    disease_probability
+                ]
+            }
+        )
 
         st.bar_chart(
             probability_df.set_index("Condition")
@@ -478,66 +537,125 @@ if predict_button:
 
 
         # ====================================================
-        # INPUT SUMMARY
+        # PROBABILITY TABLE
         # ====================================================
 
-        st.subheader("📝 Patient Input Summary")
+        st.subheader("📊 Probability Details")
 
-        display_data = input_data.copy()
+        probability_display = pd.DataFrame(
+            {
+                "Condition": [
+                    "No Heart Disease",
+                    "Heart Disease"
+                ],
 
-        display_data.columns = [
-
-            "Age",
-            "Sex",
-            "Chest Pain Type",
-            "Resting Blood Pressure",
-            "Cholesterol",
-            "Fasting Blood Sugar",
-            "Resting ECG",
-            "Maximum Heart Rate",
-            "Exercise Angina",
-            "ST Depression",
-            "ST Slope",
-            "Major Vessels",
-            "Thalassemia"
-
-        ]
-
-        st.dataframe(
-            display_data,
-            use_container_width=True,
-            hide_index=True
+                "Probability": [
+                    f"{no_disease_probability * 100:.2f}%",
+                    f"{disease_probability * 100:.2f}%"
+                ]
+            }
         )
+
+        st.table(probability_display)
 
 
         # ====================================================
         # MODEL EXPLANATION
         # ====================================================
 
-        st.subheader("🤖 How This Prediction Works")
+        st.divider()
+
+        st.subheader("🤖 How the AI Model Works")
 
         st.write(
             """
-            The application sends the information you entered to the
-            trained XGBoost machine-learning model.
+            The application uses the same preprocessing and XGBoost
+            model that were used during training.
 
-            The model first applies the same preprocessing used during
-            training. Categorical variables are transformed using
-            One-Hot Encoding.
+            The process is:
 
-            XGBoost then analyzes the input features and produces:
+            1. The user enters patient information.
 
-            • Class 0 → No Heart Disease
+            2. Streamlit creates a Pandas DataFrame.
 
-            • Class 1 → Heart Disease
+            3. The saved Pipeline receives the data.
 
-            The model also produces probabilities for both classes.
+            4. One-Hot Encoding transforms categorical features.
+
+            5. XGBoost analyzes the transformed data.
+
+            6. The model predicts Class 0 or Class 1.
+
+            7. The application displays the prediction probability.
             """
         )
 
 
+        # ====================================================
+        # MODEL INFORMATION
+        # ====================================================
+
+        st.divider()
+
+        st.subheader("🧠 Model Information")
+
+        model_info_col1, model_info_col2, model_info_col3 = st.columns(3)
+
+
+        with model_info_col1:
+
+            st.metric(
+                "Algorithm",
+                "XGBoost"
+            )
+
+
+        with model_info_col2:
+
+            st.metric(
+                "Test Accuracy",
+                "77.05%"
+            )
+
+
+        with model_info_col3:
+
+            st.metric(
+                "Test ROC-AUC",
+                "87.45%"
+            )
+
+
+    # ========================================================
+    # PREDICTION ERROR
+    # ========================================================
+
     except Exception as e:
 
-        st.error("❌ An error occurred while making the prediction.")
+        st.error(
+            "❌ An error occurred while making the prediction."
+        )
+
+        st.write("### Actual Prediction Error")
 
         st.code(str(e))
+
+        st.write("### Error Type")
+
+        st.code(type(e).__name__)
+
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.divider()
+
+st.caption(
+    """
+    ❤️ Heart Disease Prediction | XGBoost Machine Learning Project
+
+    Educational and research use only — not a medical diagnosis.
+    """
+)
+```
